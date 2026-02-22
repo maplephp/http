@@ -25,6 +25,8 @@ class Client implements ClientInterface
     private $requestDataLength;
     private $requestResponse;
     private $requestMeta;
+    private array $responseHeaders = [];
+    private string $responseProtocolLine = '';
 
     public function __construct(array $options = [])
     {
@@ -133,6 +135,31 @@ class Client implements ClientInterface
         if (!$this->hasOption(CURLOPT_TIMEOUT)) {
             $this->setOption(CURLOPT_TIMEOUT, static::DEFAULT_TIMEOUT);
         }
+
+        $this->setOption(CURLOPT_HEADERFUNCTION, function ($ch, string $headerLine): int {
+            $len = strlen($headerLine);
+            $line = trim($headerLine);
+
+            if ($line === '') {
+                return $len;
+            }
+
+            // New header block (e.g., redirects): reset headers when we see a status line
+            if (str_starts_with($line, 'HTTP/')) {
+                $this->responseHeaders = [];
+                $this->responseProtocolLine = $line;
+                return $len;
+            }
+
+            $parts = explode(':', $line, 2);
+            if (count($parts) === 2) {
+                $name = trim($parts[0]);
+                $value = trim($parts[1]);
+                $this->responseHeaders[$name][] = $value; // preserve multi-value headers
+            }
+
+            return $len;
+        });
     }
 
     protected function createResponse(): ResponseInterface
@@ -144,7 +171,24 @@ class Client implements ClientInterface
         }
         $stream->seek(0);
 
-        return new Response($stream);
+        $status = (int) ($this->requestMeta['http_code'] ?? 0);
+
+        $response = new Response($stream);
+
+        $response = $response->withStatus($status);
+
+        foreach ($this->responseHeaders as $name => $values) {
+            foreach ($values as $v) {
+                $response = $response->withAddedHeader($name, $v);
+            }
+        }
+
+        // Should I set protocol version?
+        // cURL gives you HTTP version as an int; you can map it:
+        // CURL_HTTP_VERSION_1_0, 1_1, 2_0, 3 etc.
+        // $response = $response->withProtocolVersion('1.1');
+
+        return $response;
     }
 
     /**
