@@ -42,6 +42,11 @@
       "MaplePHP\\Http\\": "src"
     }
   },
+  "extra": {
+    "branch-alias": {
+      "dev-develop": "2.0.x-dev"
+    }
+  },
   "minimum-stability": "dev",
   "scripts": {
     "unitary": "php vendor/bin/unitary"
