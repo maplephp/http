@@ -5,17 +5,46 @@ declare(strict_types=1);
 namespace MaplePHP\Http;
 
 use MaplePHP\Http\Interfaces\PathInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 
 class Path implements PathInterface
 {
-    private $parts;
-    private $vars;
+    private array $parts;
+    private array $vars;
+	private ServerRequestInterface|RequestInterface $request;
 
-    public function __construct(array $parts)
+	public function __construct(array $parts, ServerRequestInterface|RequestInterface $request)
     {
         $this->parts = $parts;
         $this->vars = $this->partsToVars($parts);
+		$this->request = $request;
     }
+
+	/**
+	 * Get PSR URI instance with whitelisted path and
+	 * cleared, query and fragments
+	 *
+	 * @return UriInterface
+	 */
+	public function uri(): UriInterface
+	{
+		return $this->request->getUri()
+			->withPath(implode("/", $this->vars))
+			->withQuery("")
+			->withFragment("");
+	}
+
+	/**
+	 * Get current full URL with whitelisted path
+	 *
+	 * @return string
+	 */
+	public function url(): string
+	{
+		return $this->uri()->getUri();
+	}
 
     /**
      * With URI path type key
@@ -44,6 +73,7 @@ class Path implements PathInterface
 
     /**
      * Same as withType except that you Need to select a part
+     *
      * @param string|array $type
      * @return static
      */
@@ -54,6 +84,7 @@ class Path implements PathInterface
 
     /**
      * Same as withType except it will only reset
+     *
      * @return static
      */
     public function reset(): self
@@ -97,6 +128,7 @@ class Path implements PathInterface
 
     /**
      * Get vars/path as array
+     *
      * @return array
      */
     public function vars(): array
@@ -106,6 +138,7 @@ class Path implements PathInterface
 
     /**
      * Get vars/path as array
+     *
      * @return array
      */
     public function parts(): array
@@ -115,21 +148,14 @@ class Path implements PathInterface
 
     /**
      * Get expected slug from path
-     * @return string
+     *
+     * @return array
      */
-    public function get(): string
+    public function get(): array
     {
-        return $this->last();
+        return array_filter(explode("/", $this->last()));
     }
 
-    /**
-     * Get expected slug from path
-     * @return string
-     */
-    public function current(): string
-    {
-        return $this->last();
-    }
 
     /**
      * Get last path item
@@ -138,10 +164,8 @@ class Path implements PathInterface
      */
     public function last(): string
     {
-        if ($this->vars === null) {
-            $this->vars = $this->getVars();
-        }
-        return end($this->vars);
+		$end = end($this->vars);
+        return is_string($end) ? $end : '';
     }
 
     /**
@@ -151,10 +175,8 @@ class Path implements PathInterface
      */
     public function first(): string
     {
-        if ($this->vars === null) {
-            $this->vars = $this->getVars();
-        }
-        return reset($this->vars);
+	    $reset = reset($this->vars);
+	    return is_string($reset) ? $reset : '';
     }
 
     /**
@@ -164,9 +186,6 @@ class Path implements PathInterface
      */
     public function prev(): string
     {
-        if ($this->vars === null) {
-            $this->end();
-        }
         return prev($this->vars);
     }
 
@@ -177,9 +196,6 @@ class Path implements PathInterface
      */
     public function next(): string
     {
-        if ($this->vars === null) {
-            $this->reset();
-        }
         return next($this->vars);
     }
 
