@@ -27,6 +27,9 @@
       "homepage": "https://wazabii.se"
     }
   ],
+  "scripts": {
+    "test": "php vendor/bin/unitary"
+  },
   "require": {
     "php": ">=8.2",
     "psr/http-message": "^2.0",
@@ -44,11 +47,10 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-develop": "2.0.x-dev"
+      "dev-main": "2.x-dev",
+      "dev-develop": "2.x-dev"
     }
   },
   "minimum-stability": "dev",
-  "scripts": {
-    "unitary": "php vendor/bin/unitary"
-  }
+  "prefer-stable": true
 }
