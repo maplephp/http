@@ -266,6 +266,78 @@ if ($response->getStatusCode() === 200) {
     echo 'Error: ' . $response->getReasonPhrase();
 }
 ```
+---
+
+
+# Input
+
+A simple, secure static helper class for reading and sanitizing `$_GET` and `$_POST` values in PHP. Part of the [MaplePHP HTTP](https://github.com/MaplePHP/Http) library.
+
+### Checking if a key exists
+
+```php
+// Check in either $_GET or $_POST
+Input::has('name');
+
+// Check only in $_GET
+Input::hasGet('page');
+
+// Check only in $_POST
+Input::hasPost('email');
+```
+
+---
+
+### Reading encoded (safe) values
+
+Values are automatically HTML-encoded to prevent XSS. Returns `null` if the key does not exist.
+
+```php
+// From $_GET
+$page = Input::get('page');
+
+// From $_POST
+$email = Input::post('email');
+
+// From $_GET or $_POST (GET takes priority)
+$id = Input::request('id');
+
+// With a fallback default
+$page = Input::get('page', '1');
+```
+
+---
+
+### Reading raw (unencoded) values
+
+Use raw methods when you need the original unmodified value, or when working with array inputs.
+
+```php
+// Scalar raw value
+$name = Input::getRaw('name');
+
+// Array input e.g. $_POST['tags'][]
+$tags = Input::postRaw('tags');
+
+// With a fallback default
+$filters = Input::getRaw('filters', []);
+```
+
+> **Note:** Raw values are not sanitized. Make sure to validate or sanitize them before use.
+
+---
+
+### Reading all input
+
+```php
+// All raw merged input from $_GET and $_POST (POST takes priority)
+$data = Input::all();
+
+// All encoded merged input, including nested arrays
+$data = Input::allEncoded();
+```
+
+---
 
 ## Conclusion
 
