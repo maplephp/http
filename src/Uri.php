@@ -296,7 +296,7 @@ class Uri implements UriInterface
      */
     public function getArgv(): array
     {
-        return $this->argv;
+        return $this->argv === null ? [] : $this->argv;
     }
 
     /**
