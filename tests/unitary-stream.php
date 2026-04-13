@@ -25,18 +25,18 @@ group('MaplePHP\Http\Stream', function (TestCase $case) {
     // -------------------------------------------------
     // write / read behaviour
     // -------------------------------------------------
-    $case->expect(function (Expect $expect) {
+    $case->check(function (Expect $expect) {
 
         $s = new Stream(Stream::TEMP, 'w+');
         $bytes = $s->write('Hello');
 
-        $expect->expect($bytes)
+        $expect->against($bytes)
             ->isInt()
             ->isGreaterThan( 1);
     });
 
 
-    $case->expect(function (Expect $expect) {
+    $case->check(function (Expect $expect) {
 
         $s = new Stream(Stream::TEMP, 'w+');
         $s->write('HelloWorld');
@@ -45,8 +45,8 @@ group('MaplePHP\Http\Stream', function (TestCase $case) {
         $first = $s->read(5);
         $rest  = $s->getContents();
 
-        $expect->expect($first)->isEqualTo('Hello');
-        $expect->expect($rest)->isEqualTo('World');
+        $expect->against($first)->isEqualTo('Hello');
+        $expect->against($rest)->isEqualTo('World');
     });
 
 
@@ -54,13 +54,13 @@ group('MaplePHP\Http\Stream', function (TestCase $case) {
     // __toString rewind behaviour
     // -------------------------------------------------
 
-    $case->expect(function (Expect $expect) {
+    $case->check(function (Expect $expect) {
 
         $s = new Stream(Stream::TEMP, 'w+');
         $s->write('ABC');
         $s->read(1);
 
-        $expect->expect((string)$s)
+        $expect->against((string)$s)
             ->isString()
             ->isEqualTo('ABC');
     });
@@ -70,14 +70,14 @@ group('MaplePHP\Http\Stream', function (TestCase $case) {
     // seek / tell
     // -------------------------------------------------
 
-    $case->expect(function (Expect $expect) {
+    $case->check(function (Expect $expect) {
 
         $s = new Stream(Stream::TEMP, 'w+');
         $s->write('ABCDE');
         $s->rewind();
         $s->read(2);
 
-        $expect->expect($s->tell())
+        $expect->against($s->tell())
             ->isInt()
             ->isEqualTo(2);
     });
@@ -87,12 +87,12 @@ group('MaplePHP\Http\Stream', function (TestCase $case) {
     // getLines
     // -------------------------------------------------
 
-    $case->expect(function (Expect $expect) {
+    $case->check(function (Expect $expect) {
 
         $s = new Stream(Stream::TEMP, 'w+');
         $s->write("A\nB\nC\nD\n");
 
-        $expect->expect($s->getLines(2, 3))
+        $expect->against($s->getLines(2, 3))
             ->isString()
             ->isEqualTo("B\nC\n");
     });
@@ -102,13 +102,13 @@ group('MaplePHP\Http\Stream', function (TestCase $case) {
     // clean
     // -------------------------------------------------
 
-    $case->expect(function (Expect $expect) {
+    $case->check(function (Expect $expect) {
 
         $s = new Stream(Stream::TEMP, 'w+');
         $s->write('12345');
         $s->clean();
 
-        $expect->expect($s->getSize())
+        $expect->against($s->getSize())
             ->isInt()
             ->isEqualTo(0);
     });
@@ -118,12 +118,12 @@ group('MaplePHP\Http\Stream', function (TestCase $case) {
     // close / detach
     // -------------------------------------------------
 
-    $case->expect(function (Expect $expect) {
+    $case->check(function (Expect $expect) {
 
         $s = new Stream(Stream::TEMP, 'w+');
         $s->close();
 
-        $expect->expect($s->getResource())
+        $expect->against($s->getResource())
             ->isNull();
     });
 
